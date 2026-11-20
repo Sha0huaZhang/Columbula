@@ -60,9 +60,10 @@ static void pace(long long *deadline, long ms)
 
 /* 行尾的 ~ 表示拖腔，每个 ~ 停留一个字符的时间。
    短句唱完补 pad 个空格，空格同样按字符节奏输出，
-   于是每行都走到同一列，光标也能看见在动 */
+   于是每行都走到同一列，光标也能看见在动。
+   最后一个 pad 和 tail_ms 都是 0：唱完 ~ 就收工，不留尾巴 */
 static void sing_line(const char *line, long char_ms, int tildes, long pad,
-                      long long *deadline)
+                      long tail_ms, long long *deadline)
 {
     const unsigned char *p = (const unsigned char *)line;
 
@@ -88,7 +89,8 @@ static void sing_line(const char *line, long char_ms, int tildes, long pad,
     }
     putchar('\n');
     fflush(stdout);
-    pace(deadline, char_ms * NAP_LINE_UNITS);
+    if (tail_ms > 0)
+        pace(deadline, tail_ms);
 }
 
 void warble_sing(long char_ms)
@@ -107,10 +109,12 @@ void warble_sing(long char_ms)
     deadline = plat_now_ms();
     fputs("\033[38;5;74m", stdout);     /* 主色 */
     for (i = 0; i <= last; i++) {
-        int tildes = i == last ? 2 : 1;
+        int is_last = (i == last);
+        int tildes = is_last ? 2 : 1;
 
         sing_line(WARBLE_LINES[i], char_ms, tildes,
-                  max_units - line_units(WARBLE_LINES[i], tildes), &deadline);
+                  is_last ? 0 : max_units - line_units(WARBLE_LINES[i], tildes),
+                  is_last ? 0 : char_ms * NAP_LINE_UNITS, &deadline);
     }
     fputs("\033[0m", stdout);
     fflush(stdout);
