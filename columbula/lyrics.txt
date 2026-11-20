@@ -1,0 +1,9 @@
+# 一行一句。空行和 # 开头的行会被跳过。
+# 标点留在这里，输出时自动跳过。
+Splendeat fenestra, adsint somnia flora,
+O cara filia lunae,
+Neve plumam pulvis foedet tuam,
+Nec iam complexum alma,
+Capias bona somnias a luna,
+Dormi cara columbula,
+O columbula mea.
