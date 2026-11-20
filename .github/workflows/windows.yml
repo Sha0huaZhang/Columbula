@@ -23,9 +23,12 @@ jobs:
         shell: cmd
         working-directory: columbula
         run: |
-          build.bat
+          :: 批处理必须用 call 调用，否则 build.bat 结束时不会返回到这里的后续命令
+          call build.bat
           if errorlevel 1 exit /b 1
           copy /y dist\columbula-windows.exe dist\Columbula.exe
+          if errorlevel 1 exit /b 1
+          dir dist
 
       - name: Smoke test
         shell: cmd
