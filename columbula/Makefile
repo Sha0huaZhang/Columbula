@@ -21,7 +21,11 @@ endif
 PPC_BIN  := $(DIST)/$(NAME)-darwin-ppc
 LINK_PPC ?= cc -std=gnu99 -O2 -Wall -Wextra -mmacosx-version-min=10.5 -arch ppc
 
-.PHONY: all check clean ppc
+# 交叉编译 PowerPC Linux（zig 自带的 musl 工具链，产物完全静态，任何 ppc Linux 都能跑）
+PPC_LINUX_BIN := $(DIST)/$(NAME)-linux-ppc
+ZIG_TARGET    ?= powerpc-linux-musleabihf
+
+.PHONY: all check clean ppc ppc-linux
 .DELETE_ON_ERROR:
 
 all: $(BIN)
@@ -40,6 +44,11 @@ src/warble_table.h: lyrics.txt tools/gen_table.awk
 ppc: $(SRC) $(HDR)
 	@mkdir -p $(DIST)
 	$(LINK_PPC) -o $(PPC_BIN) $(SRC)
+
+ppc-linux: $(SRC) $(HDR)
+	@mkdir -p $(DIST)
+	zig cc -target $(ZIG_TARGET) -std=c11 -O2 -Wall -Wextra -Werror \
+		-Wl,-s -o $(PPC_LINUX_BIN) $(SRC)
 
 check: $(BIN)
 	@echo "  纯文本输出"
