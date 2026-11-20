@@ -4,3 +4,5 @@
 
 # C++
 *.cc   linguist-language=C++
+
+* text=auto eol=lf

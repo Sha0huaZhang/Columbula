@@ -1,0 +1,11 @@
+# C
+*.c    linguist-language=C
+*.h    linguist-language=C
+
+# C++
+*.cc   linguist-language=C++
+
+gaochengfang@gaochengfangdeMacBook-Air Columbula % cat .gitattributes 
+# C
+*.c    linguist-langugaochengfang@gaochengfangdeMacBook-Air Columbula % 
+
