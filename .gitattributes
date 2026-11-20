@@ -1,0 +1,6 @@
+# C
+*.c    linguist-language=C
+*.h    linguist-language=C
+
+# C++
+*.cc   linguist-language=C++
