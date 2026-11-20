@@ -1,0 +1,18 @@
+#ifndef COLUMBULA_WARBLE_H
+#define COLUMBULA_WARBLE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* 逐字唱出，每个字符停 char_ms，换行停 2 * char_ms */
+void warble_sing(long char_ms);
+
+/* 非终端场景：一次性输出纯文本，无颜色无停顿 */
+void warble_plain(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
