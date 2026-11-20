@@ -22,16 +22,28 @@ endif
 all: $(BIN)
 
 $(BIN): $(SRC) $(HDR)
-    @mkdir -p $(DIST)
-    $(LINK) -o $@ $(SRC)
-    @strip $@ 2>/dev/null || true
+	@mkdir -p $(DIST)
+	$(LINK) -o $@ $(SRC)
+	@strip $@ 2>/dev/null || true
 
 src/warble_table.h: lyrics.txt tools/gen_table.awk
-    @mkdir -p src
-    @LC_ALL=C awk -f tools/gen_table.awk lyrics.txt > $@
+	@mkdir -p src
+	@LC_ALL=C awk -f tools/gen_table.awk lyrics.txt > $@
 
 check: $(BIN)
-    ./$(BIN) | diff -u tests/expected.txt -
+	@echo "  纯文本输出"
+	@./$(BIN) | diff -u tests/expected.txt -
+	@echo "  --version"
+	@./$(BIN) -v | grep -Eqx '[0-9]+\.[0-9]+\.[0-9]+'
+	@echo "  速度单位"
+	@./$(BIN) -s 30ms -p | diff -q tests/expected.txt - >/dev/null
+	@./$(BIN) -s=1.2s -p | diff -q tests/expected.txt - >/dev/null
+	@./$(BIN) -s500 -p | diff -q tests/expected.txt - >/dev/null
+	@echo "  非法速度被拒"
+	@! ./$(BIN) -s 5x -p >/dev/null 2>&1
+	@! ./$(BIN) -s >/dev/null 2>&1
+	@! ./$(BIN) -s 0 -p >/dev/null 2>&1
+	@echo "  全部通过"
 
 clean:
-    rm -rf $(DIST) src/warble_table.h
+	rm -rf $(DIST) src/warble_table.h

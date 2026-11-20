@@ -19,6 +19,9 @@ a.out
 build/
 dist/
 
+# 生成物
+columbula/src/warble_table.h
+
 # 编辑器与 IDE
 .vscode/
 .idea/
