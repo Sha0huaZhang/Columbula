@@ -37,6 +37,10 @@ long long plat_now_ms(void)
 #include <time.h>
 #include <unistd.h>
 
+#if defined(__APPLE__)
+#include <mach/mach_time.h>
+#endif
+
 #include "platform.h"
 
 int plat_is_tty(void)
@@ -60,10 +64,23 @@ void plat_vt_on(void)
 
 long long plat_now_ms(void)
 {
+#if defined(__APPLE__)
+    /* clock_gettime 要 macOS 10.12+，PowerPC 停在 10.5，只能用 10.0 就有的
+       mach_absolute_time；换算成毫秒要过一个有理数时基 */
+    static mach_timebase_info_data_t tb;
+    static int ready;
+
+    if (!ready) {
+        mach_timebase_info(&tb);
+        ready = 1;
+    }
+    return (long long)(mach_absolute_time() * tb.numer / tb.denom / 1000000);
+#else
     struct timespec ts;
 
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (long long)ts.tv_sec * 1000LL + ts.tv_nsec / 1000000L;
+#endif
 }
 
 #endif

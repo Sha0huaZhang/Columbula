@@ -16,7 +16,12 @@ else
 $(error macOS / Linux 用 make，Windows 用 build.bat)
 endif
 
-.PHONY: all check clean
+# PowerPC（Mac OS X 10.5 / gcc 4.2）。现代 clang 已经没有 ppc 后端了，
+# 必须在 ppc 工具链上编：make ppc
+PPC_BIN  := $(DIST)/$(NAME)-darwin-ppc
+LINK_PPC ?= cc -std=gnu99 -O2 -Wall -Wextra -mmacosx-version-min=10.5 -arch ppc
+
+.PHONY: all check clean ppc
 .DELETE_ON_ERROR:
 
 all: $(BIN)
@@ -29,6 +34,12 @@ $(BIN): $(SRC) $(HDR)
 src/warble_table.h: lyrics.txt tools/gen_table.awk
 	@mkdir -p src
 	@LC_ALL=C awk -f tools/gen_table.awk lyrics.txt > $@
+
+# ppc 用 gcc 4.2 编，不带 -Werror：老编译器的 -Wextra 警告比新 clang 多，
+# 一旦 -Werror 会因为无关警告失败
+ppc: $(SRC) $(HDR)
+	@mkdir -p $(DIST)
+	$(LINK_PPC) -o $(PPC_BIN) $(SRC)
 
 check: $(BIN)
 	@echo "  纯文本输出"
