@@ -19,5 +19,5 @@ BEGIN {
 
 END {
     print "};"
-    exit bad
+    exit (bad ? 1 : 0)      # 不写 exit bad，mawk 对未定义变量做退出码不稳
 }
