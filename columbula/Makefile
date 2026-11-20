@@ -21,11 +21,12 @@ endif
 PPC_BIN  := $(DIST)/$(NAME)-darwin-ppc
 LINK_PPC ?= cc -std=gnu99 -O2 -Wall -Wextra -mmacosx-version-min=10.5 -arch ppc
 
-# 交叉编译 PowerPC Linux（zig 自带的 musl 工具链，产物完全静态，任何 ppc Linux 都能跑）
-PPC_LINUX_BIN := $(DIST)/$(NAME)-linux-ppc
-ZIG_TARGET    ?= powerpc-linux-musleabihf
+# 交叉编译 Linux（zig 自带的 musl 工具链，产物完全静态，不依赖目标机任何运行库）
+#   make ppc-linux    -> dist/columbula-linux-ppc     32 位大端 PowerPC
+#   make arm64-linux  -> dist/columbula-linux-arm64   AArch64
+ZIG_CC := zig cc -std=c11 -O2 -Wall -Wextra -Werror -Wl,-s -o
 
-.PHONY: all check clean ppc ppc-linux
+.PHONY: all check clean ppc ppc-linux arm64-linux
 .DELETE_ON_ERROR:
 
 all: $(BIN)
@@ -47,8 +48,11 @@ ppc: $(SRC) $(HDR)
 
 ppc-linux: $(SRC) $(HDR)
 	@mkdir -p $(DIST)
-	zig cc -target $(ZIG_TARGET) -std=c11 -O2 -Wall -Wextra -Werror \
-		-Wl,-s -o $(PPC_LINUX_BIN) $(SRC)
+	$(ZIG_CC) $(DIST)/$(NAME)-linux-ppc -target powerpc-linux-musleabihf $(SRC)
+
+arm64-linux: $(SRC) $(HDR)
+	@mkdir -p $(DIST)
+	$(ZIG_CC) $(DIST)/$(NAME)-linux-arm64 -target aarch64-linux-musl $(SRC)
 
 check: $(BIN)
 	@echo "  纯文本输出"
