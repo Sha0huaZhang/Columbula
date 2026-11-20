@@ -8,6 +8,9 @@
 /* 换行停顿占几个字符的时间 */
 #define NAP_LINE_UNITS 6
 
+/* 最后一行唱完再停几个字符的时间才结束 */
+#define LAST_HOLD_UNITS 2
+
 /* 只跳过 ASCII 标点；空格和多字节字节一律放行 */
 static int is_punct(unsigned char c)
 {
@@ -58,14 +61,23 @@ static void pace(long long *deadline, long ms)
         plat_nap((long)left);
 }
 
+/* 一行的收尾方式 */
+struct line_plan {
+    int  tildes;     /* 行尾补几个 ~ */
+    long pad;        /* 补几个空格，把整行撑到最长行的宽度 */
+    long hold_ms;    /* 换行前静默多久 */
+    long gap_ms;     /* 换行后静默多久 */
+};
+
 /* 行尾的 ~ 表示拖腔，每个 ~ 停留一个字符的时间。
-   短句唱完补 pad 个空格，空格同样按字符节奏输出，
-   于是每行都走到同一列，光标也能看见在动。
-   最后一个 pad 和 tail_ms 都是 0：唱完 ~ 就收工，不留尾巴 */
-static void sing_line(const char *line, long char_ms, int tildes, long pad,
-                      long tail_ms, long long *deadline)
+   短句唱完补空格，空格同样按字符节奏输出，
+   于是每行都走到同一列，光标也能看见在动 */
+static void sing_line(const char *line, long char_ms,
+                      const struct line_plan *plan, long long *deadline)
 {
     const unsigned char *p = (const unsigned char *)line;
+    int tildes = plan->tildes;
+    long pad = plan->pad;
 
     while (*p) {
         int n;
@@ -87,10 +99,12 @@ static void sing_line(const char *line, long char_ms, int tildes, long pad,
         fflush(stdout);
         pace(deadline, char_ms);
     }
+    if (plan->hold_ms > 0)
+        pace(deadline, plan->hold_ms);
     putchar('\n');
     fflush(stdout);
-    if (tail_ms > 0)
-        pace(deadline, tail_ms);
+    if (plan->gap_ms > 0)
+        pace(deadline, plan->gap_ms);
 }
 
 void warble_sing(long char_ms)
@@ -110,11 +124,13 @@ void warble_sing(long char_ms)
     fputs("\033[38;5;74m", stdout);     /* 主色 */
     for (i = 0; i <= last; i++) {
         int is_last = (i == last);
-        int tildes = is_last ? 2 : 1;
+        struct line_plan plan;
 
-        sing_line(WARBLE_LINES[i], char_ms, tildes,
-                  is_last ? 0 : max_units - line_units(WARBLE_LINES[i], tildes),
-                  is_last ? 0 : char_ms * NAP_LINE_UNITS, &deadline);
+        plan.tildes = is_last ? 2 : 1;
+        plan.pad = is_last ? 0 : max_units - line_units(WARBLE_LINES[i], plan.tildes);
+        plan.hold_ms = is_last ? char_ms * LAST_HOLD_UNITS : 0;
+        plan.gap_ms = is_last ? 0 : char_ms * NAP_LINE_UNITS;
+        sing_line(WARBLE_LINES[i], char_ms, &plan, &deadline);
     }
     fputs("\033[0m", stdout);
     fflush(stdout);
