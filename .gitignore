@@ -6,6 +6,7 @@
 *.dylib
 *.out
 a.out
+*.pdb
 
 # 可执行文件
 *.exe
