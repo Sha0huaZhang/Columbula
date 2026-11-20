@@ -129,7 +129,7 @@ void warble_sing(long char_ms)
         plan.tildes = is_last ? 2 : 1;
         plan.pad = is_last ? 0 : max_units - line_units(WARBLE_LINES[i], plan.tildes);
         plan.hold_ms = is_last ? char_ms * LAST_HOLD_UNITS : 0;
-        plan.gap_ms = is_last ? 0 : char_ms * NAP_LINE_UNITS;
+        plan.gap_ms = char_ms * NAP_LINE_UNITS;   /* 最后一行也算一次换行，只是不再真的换行 */
         sing_line(WARBLE_LINES[i], char_ms, &plan, &deadline);
     }
     fputs("\033[0m", stdout);
