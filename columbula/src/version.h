@@ -1,0 +1,6 @@
+#ifndef COLUMBULA_VERSION_H
+#define COLUMBULA_VERSION_H
+
+#define COLUMBULA_VERSION "0.1.0"
+
+#endif
